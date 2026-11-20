@@ -15,7 +15,7 @@
       <p>Behavioral identity for every device in the home</p>
     </div>
   </div>
-  <div class="status" id="status"><span class="dot"></span><span id="status-text">Starting…</span></div>
+  <div class="status" id="status" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="status-text">Starting…</span></div>
   <div class="clock">
     <span id="clock">—</span>
     <div class="speed" role="group" aria-label="Simulation speed">
@@ -41,6 +41,7 @@
       <label>Device <select id="atk-device"></select></label>
       <label>Attack <select id="atk-kind"></select></label>
       <button id="launch" class="danger">Launch attack</button>
+      <button id="update" class="ghost" title="The selected device starts using a new cloud service, as after a firmware update">Simulate firmware update</button>
     </div>
     <div id="active-attacks" class="chips"></div>
   </section>
@@ -52,18 +53,18 @@
     <div class="kpi"><span id="k-local">100%</span><small>processed on the gateway</small></div>
   </section>
 
-  <section class="devices" id="devices"></section>
+  <section class="devices" id="devices" aria-label="Protected devices"></section>
 
   <section class="detail card" id="detail">
     <div class="detail-head">
       <h2>Latest decision</h2>
       <span class="muted" id="detail-time"></span>
     </div>
-    <div id="detail-body" class="empty">No alerts yet. Every device is acting like itself.</div>
+    <div id="detail-body" class="empty" aria-live="polite">No alerts yet. Every device is acting like itself.</div>
   </section>
 
   <section class="feed card">
-    <h2>Decision log</h2>
+    <div class="detail-head"><h2>Decision log</h2><a class="ghost" href="/api/log.csv" download>Download CSV</a></div>
     <ol id="feed"></ol>
   </section>
 
