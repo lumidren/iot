@@ -19,10 +19,12 @@ from pathlib import Path
 import numpy as np
 
 from .attacks import ALL_ATTACKS, INTENSITY_BY_KIND, LABELS, Attack
-from .devices import DEVICE_INDEX, DEVICES, GATEWAY, HOME_SERVER, Home
+from .devices import DEVICE_INDEX, DEVICES, GATEWAY, HOME_SERVER, Home, Periodic
 from .engine import Guardian
 from .evaluate import COVER
-from .net import concat
+from .net import TCP, concat, ip
+
+UPDATE_CLOUD = ip("52.29.40.10")  # the "new firmware" endpoint in the drift demo
 
 WEB = Path(__file__).parent / "web"
 W = 10.0
@@ -42,7 +44,9 @@ class LiveHome:
         self.learn_hours = learn_hours
         self.tick = tick
         self.home = Home(seed=seed)
-        self.guardian = Guardian(DEVICES, seed=seed)
+        # Drift is reviewed every simulated hour here (a day on a real gateway) so the
+        # firmware-update demo finishes in minutes.
+        self.guardian = Guardian(DEVICES, seed=seed, drift_review_windows=360)
         self.rng = np.random.default_rng(seed + 1)
         self.t = 0.0
         self.attacks: list[Attack] = []
@@ -53,6 +57,7 @@ class LiveHome:
         self.progress = "starting"
         self.paused = False
         self.version = 0
+        self.updated: set[str] = set()
 
     # -- setup -------------------------------------------------------------
     def learn(self) -> None:
@@ -120,6 +125,19 @@ class LiveHome:
         self.attacks.append(attack)
         return attack
 
+    def firmware_update(self, device: str) -> None:
+        """Simulate a legitimate change: the device starts using a new cloud service."""
+        self.home.devices[device].behaviors.append(
+            Periodic(60, [UPDATE_CLOUD], 443, TCP, req=(300, 520), resp=(200, 420),
+                     new_connection=True, dns=True))
+        self.updated.add(device)
+
+    def resolve_drift(self, device: str, accept: bool) -> bool:
+        relearned = self.guardian.resolve_drift(device, accept)
+        if relearned:
+            self.guardian.release(device, self.t, trust=False)
+        return relearned
+
     def release(self, device: str, trust: bool) -> None:
         event = self.guardian.release(device, self.t, trust=trust)
         self.series[device].append(0.0)
@@ -132,6 +150,7 @@ class LiveHome:
             row["series"] = list(self.series[row["id"]])
             row["under_attack"] = [LABELS[a.kind] for a in self.attacks
                                    if a.device == row["id"] and a.overlaps(self.t - W, self.t)]
+            row["updated"] = row["id"] in self.updated
         return {
             "ready": self.ready, "progress": self.progress, "t": self.t,
             "clock": clock(self.t), "speed": W / self.tick, "paused": self.paused,
@@ -157,6 +176,15 @@ class AttackIn(BaseModel):
 class ReleaseIn(BaseModel):
     device: str
     trust: bool = True
+
+
+class DeviceIn(BaseModel):
+    device: str
+
+
+class DriftIn(BaseModel):
+    device: str
+    accept: bool
 
 
 class SpeedIn(BaseModel):
@@ -220,6 +248,19 @@ def create_app(live: LiveHome | None = None, run: bool = True):
             raise HTTPException(400, "unknown device")
         live.release(body.device, body.trust)
         return {"ok": True}
+
+    @app.post("/api/update")
+    def update(body: DeviceIn):
+        if body.device not in DEVICE_INDEX:
+            raise HTTPException(400, "unknown device")
+        live.firmware_update(body.device)
+        return {"ok": True}
+
+    @app.post("/api/drift")
+    def drift(body: DriftIn):
+        if body.device not in DEVICE_INDEX:
+            raise HTTPException(400, "unknown device")
+        return {"ok": True, "relearned": live.resolve_drift(body.device, body.accept)}
 
     @app.post("/api/speed")
     def speed(body: SpeedIn):
