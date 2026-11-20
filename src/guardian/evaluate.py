@@ -90,6 +90,9 @@ def schedule(rng: np.random.Generator, start: float, hours: float) -> list[Attac
     """One episode of every scenario per device, at random times, never overlapping."""
     attacks = []
     slots = int(hours * 3600 // 1800)  # 30-minute slots
+    if slots - 2 < len(ALL_ATTACKS):
+        raise ValueError(f"a test of {hours} h is too short: every device needs "
+                         f"{len(ALL_ATTACKS)} separate 30-minute slots (use 6 h or more)")
     for spec in DEVICES:
         chosen = rng.choice(np.arange(1, slots - 1), size=len(ALL_ATTACKS), replace=False)
         for kind, slot in zip(ALL_ATTACKS, chosen, strict=True):
