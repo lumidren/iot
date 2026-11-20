@@ -145,10 +145,9 @@ class Guardian:
                                                                               s.threat)
             tier = self.policy.state(dev_id).tier
             exp = None
-            if s.threat >= 31 or change:
+            if s.threat >= 31:
                 exp = explain(s, rt.detector, rt.spec.name)
-                if s.threat >= 31:
-                    rt.last_alert = s
+                rt.last_alert = s
             action = self._enforce(rt, t0, change, exp) if change else None
             event = Event(t0, dev_id, s.threat, tier, s.mode, s.ml, s.stat, s.ident, exp, action)
             if exp is not None or action is not None:
@@ -171,7 +170,12 @@ class Guardian:
     def _enforce(self, rt: DeviceRuntime, t0: float, change: tuple[Tier, Tier],
                  exp: Explanation | None) -> Action:
         before, after = change
-        reason = exp.summary if exp is not None else TIER_EFFECT[after]
+        if after < before:
+            minutes = self.policy.cooldown_windows * 10 / 60
+            reason = f"Nothing suspicious for {minutes:.0f} minutes: stepping down to " \
+                     f"{after.label}"
+        else:
+            reason = exp.summary if exp is not None else TIER_EFFECT[after]
         cmds = nft_rules(rt.spec.address, after, gateway=self.gateway,
                          allowed=self._allowed(rt), rate_bytes=self._rate(rt))
         action = Action(t0, rt.spec.id, before, after, reason, cmds)
