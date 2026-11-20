@@ -10,8 +10,9 @@ rule from the design is in between, reviewed once per period:
   > 30%          large:    ask "was this a firmware update?"
 
 Drift is the share of a device's active windows in the period that sat outside
-its normal behavior (ML or range score above zero) without being an alert the
-owner confirmed as an attack. Nothing is relearned without the owner's yes.
+its normal behavior (any layer above zero). Nothing is relearned without the
+owner's yes: an attacker who persists also looks like drift, which is exactly
+why the owner is asked instead of the model adapting by itself.
 """
 
 from __future__ import annotations
@@ -66,11 +67,12 @@ class DriftMonitor:
         if score.features[INDEX["pkts_total"]] == 0:
             return
         self.active += 1
-        if score.ml > 0 or score.stat > 0:
+        if score.ml > 0 or score.stat > 0 or score.ident > 0:
             self.unusual += 1
         if score.threat < 31:  # only benign-looking windows may teach anything
+            new_nets = set(score.identity.new_external_nets)
             for p in score.identity.new_external:
-                if prefix24(p) not in score.identity.new_external_nets and not is_private(p):
+                if int(prefix24(p)) not in new_nets and not is_private(p):
                     self.rotated[int(p)] += 1
         for p in score.identity.new_external:
             self.new_peers[int(p)] += 1
