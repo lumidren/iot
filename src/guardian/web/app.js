@@ -60,7 +60,18 @@ function renderDevices() {
       ? `<button class="ghost" data-release="${d.id}">Release</button>` : "";
     const attack = d.under_attack.length
       ? `<div class="attack">⚠ under attack: ${esc(d.under_attack.join(", "))}</div>` : "";
-    return `<article class="device ${d.tier}" data-device="${d.id}" tabindex="0">
+    const notice = d.notice ? `<div class="notice ${d.notice.level}" role="alert">
+        <b>${d.notice.level === "large" ? "Big behavior change" : "Behavior change"}</b>
+        <span>${esc(d.notice.question)}</span>
+        <span class="muted">${Math.round(d.notice.drift * 100)}% of its traffic looked unusual · ${d.notice.new_destinations} new destination(s)</span>
+        <div class="buttons">
+          <button class="ghost" data-drift="${d.id}" data-accept="1">Yes, relearn it</button>
+          <button class="ghost" data-drift="${d.id}" data-accept="0">No, keep watching</button>
+        </div>
+      </div>` : "";
+    const updated = d.updated ? `<div class="meta">firmware updated (simulated)</div>` : "";
+    return `<article class="device ${d.tier}" data-device="${d.id}" tabindex="0"
+        aria-label="${esc(d.name)}: ${TIER_LABEL[d.tier]}, threat ${Math.round(d.threat)} of 100">
       <div class="head">
         <div><div class="name">${esc(d.name)}</div>
         <div class="meta">${esc(d.hardware)} · ${esc(d.address)}</div></div>
@@ -68,7 +79,7 @@ function renderDevices() {
       </div>
       <div class="threat"><b>${Math.round(d.threat)}</b><small>/100 threat</small></div>
       ${spark(d.series)}
-      ${attack}
+      ${attack}${updated}${notice}
       <div class="foot"><span>${d.packets} pkts · ${fmtBytes(d.bytes)} / 10 s</span>${release}</div>
     </article>`;
   }).join("");
@@ -201,6 +212,12 @@ async function post(url, body) {
 }
 
 document.addEventListener("click", async (ev) => {
+  const drift = ev.target.closest("[data-drift]");
+  if (drift) {
+    ev.stopPropagation();
+    await post("/api/drift", { device: drift.dataset.drift, accept: drift.dataset.accept === "1" });
+    return;
+  }
   const rel = ev.target.closest("[data-release]");
   if (rel) {
     ev.stopPropagation();
@@ -221,6 +238,20 @@ document.addEventListener("click", async (ev) => {
     pinnedAlert = items[Number(feed.dataset.feed)] || null;
     renderDetail();
   }
+});
+
+document.addEventListener("keydown", (ev) => {
+  // device cards act like buttons for keyboard users
+  if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches("[data-device]")) {
+    ev.preventDefault();
+    ev.target.click();
+  }
+});
+
+$("#update").addEventListener("click", async () => {
+  const device = $("#atk-device").value;
+  await post("/api/update", { device });
+  selected = device;
 });
 
 $("#launch").addEventListener("click", async () => {
