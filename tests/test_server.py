@@ -73,3 +73,28 @@ def test_second_start_loads_the_saved_models(tmp_path):
     assert second.t == first.t
     second.step()
     assert all(d["phase"] == "protected" for d in second.snapshot()["devices"])
+
+
+def test_firmware_update_raises_a_question_and_approval_relearns(client):
+    c, live = client
+    assert c.post("/api/update", json={"device": "plug-1"}).status_code == 200
+    for _ in range(2 * 360 + 5):
+        live.step()
+        if live.guardian.notices.get("plug-1"):
+            break
+    plug = next(d for d in c.get("/api/state").json()["devices"] if d["id"] == "plug-1")
+    assert plug["updated"] is True
+    assert plug["notice"] is not None and plug["notice"]["level"] in ("moderate", "large")
+    r = c.post("/api/drift", json={"device": "plug-1", "accept": True}).json()
+    assert r["relearned"] is True
+    plug = next(d for d in c.get("/api/state").json()["devices"] if d["id"] == "plug-1")
+    assert plug["notice"] is None and plug["tier"] == "MONITOR"
+
+
+def test_decision_log_downloads_as_csv(client):
+    c, _ = client
+    r = c.get("/api/log.csv")
+    assert r.status_code == 200 and r.headers["content-type"].startswith("text/csv")
+    lines = r.text.strip().splitlines()
+    assert lines[0].startswith("time,device,threat,tier")
+    assert len(lines) > 1
