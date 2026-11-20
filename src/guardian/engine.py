@@ -20,6 +20,7 @@ import numpy as np
 
 from .detector import Baseline, DeviceDetector, Score, StartupGuard, combine, stat_score
 from .devices import GATEWAY, DeviceSpec
+from .drift import DriftMonitor, Notice
 from .explain import Explanation, explain
 from .features import INDEX, Context, extract
 from .net import ip_str, is_private, prefix24
@@ -75,7 +76,8 @@ class DeviceRuntime:
 class Guardian:
     def __init__(self, specs: list[DeviceSpec], *, stats_after: float = 24 * HOUR,
                  learn_after: float = 48 * HOUR, enforcer: DryRunEnforcer | None = None,
-                 policy: ResponsePolicy | None = None, gateway: int = GATEWAY, seed: int = 0):
+                 policy: ResponsePolicy | None = None, gateway: int = GATEWAY, seed: int = 0,
+                 drift_review_windows: int = 8640):
         self.devices = {s.id: DeviceRuntime(s) for s in specs}
         self.stats_after = stats_after
         self.learn_after = learn_after
@@ -85,6 +87,8 @@ class Guardian:
         self.guard = StartupGuard()
         self.seed = seed
         self.log: list[Event] = []
+        self.drift = {s.id: DriftMonitor(review_windows=drift_review_windows) for s in specs}
+        self.notices: dict[str, Notice] = {}
 
     # -- learning ----------------------------------------------------------
     def bootstrap(self, history: dict[str, list[tuple[float, np.ndarray]]],
@@ -160,6 +164,8 @@ class Guardian:
             self._advance_learning(rt, t0)
             s = self._score(rt, pkts, t0)
             rt.last_score = s
+            if rt.detector is not None:
+                self._track_drift(dev_id, rt, t0, pkts, s)
             change = None if self.policy.observe_only else self.policy.decide(dev_id, t0,
                                                                               s.threat)
             tier = self.policy.state(dev_id).tier
@@ -173,6 +179,30 @@ class Guardian:
                 self.log.append(event)
                 out.append(event)
         return out
+
+    # -- drift -------------------------------------------------------------
+    def _track_drift(self, dev_id: str, rt: DeviceRuntime, t0: float, pkts: np.ndarray,
+                     s: Score) -> None:
+        monitor = self.drift[dev_id]
+        monitor.record(t0, pkts, s)
+        if monitor.due():
+            notice = monitor.review(dev_id, t0, rt.detector.ctx.known_peers)
+            if notice is not None:
+                self.notices[dev_id] = notice
+
+    def resolve_drift(self, dev_id: str, accept: bool) -> bool:
+        """Owner's answer to a drift question. ``True`` when the device was relearned."""
+        notice = self.notices.pop(dev_id, None)
+        if notice is None or not accept:
+            return False
+        windows = list(self.drift[dev_id].buffer)
+        if len(windows) < 40:
+            return False
+        cut = int(len(windows) * 0.75)
+        rt = self.devices[dev_id]
+        rt.detector = DeviceDetector(dev_id, seed=self.seed).fit(windows[:cut], windows[cut:])
+        rt.last_alert = None
+        return True
 
     # -- response ----------------------------------------------------------
     def _allowed(self, rt: DeviceRuntime) -> list[int]:
@@ -239,6 +269,7 @@ class Guardian:
                 "threat": round(s.threat, 1) if s else 0.0,
                 "components": {"ml": round(s.ml, 1), "stat": round(s.stat, 1),
                                "identity": round(s.ident, 1)} if s else None,
+                "notice": self.notices[dev_id].to_dict() if dev_id in self.notices else None,
                 "packets": int(s.features[INDEX["pkts_total"]]) if s else 0,
                 "bytes": int(s.features[INDEX["bytes_total"]]) if s else 0,
             })
