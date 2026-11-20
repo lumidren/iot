@@ -266,6 +266,46 @@ class DeviceDetector:
         s_id = ident.score
         return Score(t0, combine(s_ml, s_stat, s_id), s_ml, s_stat, s_id, x, dev, ident)
 
+    # -- persistence -------------------------------------------------------
+    BASELINE_FIELDS = ("lo", "hi", "med", "raw_lo", "raw_hi", "raw_med", "up", "down")
+
+    def to_arrays(self) -> dict[str, np.ndarray]:
+        """Everything needed to score, as plain arrays (no pickle, no scikit-learn)."""
+        if not self.fitted:
+            raise ValueError("only a trained detector can be saved")
+        out = {f"baseline_{k}": getattr(self.baseline, k) for k in self.BASELINE_FIELDS}
+        out.update(self.fast.to_arrays())
+        out.update({
+            "mean": self.mean, "std": self.std,
+            "calibration": np.array([self.p99, self.tau, self.k99, self.ktau]),
+            "memory_z": self.memory_z, "memory_sq": self.memory_sq,
+            "known_peers": np.array(sorted(self.ctx.known_peers), dtype=np.uint32),
+            "known_nets": np.array(sorted(self.ctx.known_nets), dtype=np.uint32),
+            "known_ports": np.array(sorted(self.ctx.known_ports), dtype=np.uint16),
+            "hour_activity": self.ctx.hour_activity,
+            "seed": np.array([self.seed]),
+        })
+        return out
+
+    @classmethod
+    def from_arrays(cls, device_id: str, arrays: dict[str, np.ndarray]) -> DeviceDetector:
+        det = cls(device_id, seed=int(arrays["seed"][0]))
+        for k in cls.BASELINE_FIELDS:
+            setattr(det.baseline, k, np.asarray(arrays[f"baseline_{k}"]))
+        det.fast = FastForest.from_arrays(arrays)
+        det.mean, det.std = np.asarray(arrays["mean"]), np.asarray(arrays["std"])
+        det.p99, det.tau, det.k99, det.ktau = (float(v) for v in arrays["calibration"])
+        det.memory_z = np.asarray(arrays["memory_z"], dtype=np.float32)
+        det.memory_sq = np.asarray(arrays["memory_sq"])
+        det.ctx.known_peers = {int(p) for p in arrays["known_peers"]}
+        det.ctx.known_nets = {int(n) for n in arrays["known_nets"]}
+        det.ctx.known_ports = {int(p) for p in arrays["known_ports"]}
+        det.ctx.hour_activity = np.asarray(arrays["hour_activity"])
+        det.forest = None  # only needed for training; scoring uses the flat copy
+        det.fitted = True
+        det.reset_state()
+        return det
+
     def clone(self) -> DeviceDetector:
         """A copy sharing the trained models but with its own rolling state."""
         other = copy.copy(self)
