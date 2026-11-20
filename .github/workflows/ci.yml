@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[dashboard,dev]"
+      - name: Lint
+        run: ruff check src tests
+      - name: Tests
+        run: pytest -q
+      - name: Evaluation smoke run (1 seed, 2 test hours)
+        run: python -m guardian eval --seeds 1 --hours 2 --out runs/ci
+      - name: Terminal demo
+        run: python -m guardian demo --device plug-1 --attack cc_beacon --learn-hours 12
