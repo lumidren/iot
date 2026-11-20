@@ -215,7 +215,11 @@ class DeviceDetector:
         # held-out normal: p99 -> 0, p99.9 -> 30, rising above (both models)
         self.p99, p999 = np.quantile(self._raw_ml(val_rows), [0.99, 0.999])
         self.tau = max(float(p999 - self.p99), 1e-3) / -math.log(0.7)
-        self.k99, k999 = np.quantile(self._raw_knn(val_rows), [0.99, 0.999])
+        # The distance tail is estimated from held-out windows plus every training
+        # window (ignoring its own copy in memory): half a day alone is too few.
+        knn_cal = np.concatenate([self._raw_knn(val_rows),
+                                  self._raw_knn(active, skip_self=True)])
+        self.k99, k999 = np.quantile(knn_cal, [0.99, 0.999])
         self.ktau = max(float(k999 - self.k99), 1e-3) / -math.log(0.7)
         # Absorb destinations first seen in the validation period (pool rotation).
         self.ctx.learn(train + val)
@@ -227,12 +231,19 @@ class DeviceDetector:
         z = (model_view(raw) - self.mean) / self.std
         return -self.fast.score_samples(z)
 
-    def _raw_knn(self, raw: np.ndarray) -> np.ndarray:
-        z = (model_view(np.atleast_2d(raw)) - self.mean) / self.std
-        d2 = (z ** 2).sum(axis=1)[:, None] + self.memory_sq[None, :] - 2.0 * z @ self.memory_z.T
-        k = min(5, d2.shape[1])
-        nearest = np.partition(np.maximum(d2, 0.0), k - 1, axis=1)[:, :k]
-        return np.sqrt(nearest).mean(axis=1)
+    def _raw_knn(self, raw: np.ndarray, skip_self: bool = False) -> np.ndarray:
+        rows = np.atleast_2d(raw)
+        out = np.empty(len(rows))
+        for start in range(0, len(rows), 2048):  # bounded memory for calibration
+            z = (model_view(rows[start:start + 2048]) - self.mean) / self.std
+            d2 = ((z ** 2).sum(axis=1)[:, None] + self.memory_sq[None, :]
+                  - 2.0 * z @ self.memory_z.T)
+            k = min(5 + int(skip_self), d2.shape[1])
+            nearest = np.sort(np.partition(np.maximum(d2, 0.0), k - 1, axis=1)[:, :k], axis=1)
+            if skip_self:
+                nearest = nearest[:, 1:]
+            out[start:start + 2048] = np.sqrt(nearest).mean(axis=1)
+        return out
 
     def ml_score(self, raw: np.ndarray) -> float:
         """Isolation Forest and nearest-neighbour distance; the more alarmed one wins."""
