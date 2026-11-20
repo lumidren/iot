@@ -63,6 +63,23 @@ class FastForest:
         self.denominator = len(forest.estimators_) * _average_path_length(
             np.array([forest.max_samples_]))[0]
 
+    FIELDS = ("left", "right", "feature", "threshold", "leaf_value", "roots")
+
+    def to_arrays(self) -> dict[str, np.ndarray]:
+        """Plain arrays, safe to store (no pickle)."""
+        out = {f"forest_{name}": getattr(self, name) for name in self.FIELDS}
+        out["forest_meta"] = np.array([self.denominator, self.max_depth], dtype=np.float64)
+        return out
+
+    @classmethod
+    def from_arrays(cls, arrays: dict[str, np.ndarray]) -> FastForest:
+        forest = cls.__new__(cls)
+        for name in cls.FIELDS:
+            setattr(forest, name, np.asarray(arrays[f"forest_{name}"]))
+        forest.denominator = float(arrays["forest_meta"][0])
+        forest.max_depth = int(arrays["forest_meta"][1])
+        return forest
+
     def score_samples(self, x: np.ndarray) -> np.ndarray:
         """Same as ``IsolationForest.score_samples`` (higher = more normal)."""
         x = np.atleast_2d(np.asarray(x, dtype=np.float32)).astype(np.float64)
