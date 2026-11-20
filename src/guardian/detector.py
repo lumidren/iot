@@ -201,6 +201,7 @@ class DeviceDetector:
         view = model_view(active)
         self.mean = np.median(view, axis=0)
         self.std = np.maximum(view.std(axis=0), FLOORS)
+        self.forest.set_params(max_samples=min(512, len(view)))
         self.forest.fit((view - self.mean) / self.std)
         self.fast = FastForest(self.forest)
         # Nearest-neighbour memory of normal traffic shapes (deduplicated, capped).
