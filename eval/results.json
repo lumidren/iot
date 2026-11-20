@@ -1,0 +1,558 @@
+{
+  "config": {
+    "seeds": [
+      1,
+      2,
+      3
+    ],
+    "learning_days": 2.0,
+    "val_days": 0.5,
+    "test_hours": 24.0,
+    "date": "2026-11-20",
+    "machine": "Windows AMD64, Python 3.12.16"
+  },
+  "summary": {
+    "detectors": {
+      "guardian": {
+        "false_alert_rate": 9.468564366303871e-05,
+        "restrict_rate": 0.0001245863732408404,
+        "false_alerts_per_device_day": 0.6458557588805167,
+        "normal_windows": 200664,
+        "detection_rate_headline": 0.9791666666666666,
+        "detection_rate_adversarial": 0.7222222222222223
+      },
+      "ml_only": {
+        "false_alert_rate": 4.983454929633616e-05,
+        "restrict_rate": 0.00011461946338157318,
+        "false_alerts_per_device_day": 0.3013993541442411,
+        "normal_windows": 200664,
+        "detection_rate_headline": 0.9583333333333334,
+        "detection_rate_adversarial": 0.7222222222222223
+      },
+      "stat_only": {
+        "false_alert_rate": 9.966909859267233e-06,
+        "restrict_rate": 7.973527887413786e-05,
+        "false_alerts_per_device_day": 0.08611410118406888,
+        "normal_windows": 200664,
+        "detection_rate_headline": 0.875,
+        "detection_rate_adversarial": 0.5972222222222222
+      },
+      "identity_only": {
+        "false_alert_rate": 0.0,
+        "restrict_rate": 0.0,
+        "false_alerts_per_device_day": 0.0,
+        "normal_windows": 200664,
+        "detection_rate_headline": 0.5,
+        "detection_rate_adversarial": 0.0
+      },
+      "generic": {
+        "false_alert_rate": 0.0,
+        "restrict_rate": 9.966909859267233e-06,
+        "false_alerts_per_device_day": 0.0,
+        "normal_windows": 200664,
+        "detection_rate_headline": 0.826388888888889,
+        "detection_rate_adversarial": 0.3333333333333333
+      },
+      "signature": {
+        "false_alert_rate": 0.0,
+        "restrict_rate": 0.0,
+        "false_alerts_per_device_day": 0.0,
+        "normal_windows": 200664,
+        "detection_rate_headline": 0.6666666666666666,
+        "detection_rate_adversarial": 0.3333333333333333
+      }
+    },
+    "per_attack": {
+      "ddos_flood": {
+        "guardian": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 1.0,
+          "median_seconds_to_detect": 5.359157575439895,
+          "median_seconds_to_restrict": 5.359157575439895
+        },
+        "ml_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.967741935483871,
+          "median_seconds_to_detect": 15.359157575439895,
+          "median_seconds_to_restrict": 15.359157575439895
+        },
+        "stat_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 1.0,
+          "median_seconds_to_detect": 5.359157575439895,
+          "median_seconds_to_restrict": 5.359157575439895
+        },
+        "identity_only": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": 5.359157575439895
+        },
+        "generic": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 1.0,
+          "median_seconds_to_detect": 5.359157575439895,
+          "median_seconds_to_restrict": 5.359157575439895
+        },
+        "signature": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.9717741935483871,
+          "median_seconds_to_detect": 9.458189216791652,
+          "median_seconds_to_restrict": 9.458189216791652
+        }
+      },
+      "cc_beacon": {
+        "guardian": {
+          "episodes": 24,
+          "detected": 21,
+          "detection_rate": 0.875,
+          "window_recall": 0.07795698924731183,
+          "median_seconds_to_detect": 96.24129019820248,
+          "median_seconds_to_restrict": 5.768090440251399
+        },
+        "ml_only": {
+          "episodes": 24,
+          "detected": 19,
+          "detection_rate": 0.7916666666666666,
+          "window_recall": 0.057795698924731166,
+          "median_seconds_to_detect": 106.42063229356427,
+          "median_seconds_to_restrict": 111.82987418453558
+        },
+        "stat_only": {
+          "episodes": 24,
+          "detected": 10,
+          "detection_rate": 0.4166666666666667,
+          "window_recall": 0.01881720430107527,
+          "median_seconds_to_detect": 105.13953687985486,
+          "median_seconds_to_restrict": 105.13953687985486
+        },
+        "identity_only": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": 5.768090440251399
+        },
+        "generic": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": 117.2391160755069
+        },
+        "signature": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": null
+        }
+      },
+      "scan": {
+        "guardian": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 1.0,
+          "median_seconds_to_detect": 5.1793819270824315,
+          "median_seconds_to_restrict": 5.1793819270824315
+        },
+        "ml_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.967741935483871,
+          "median_seconds_to_detect": 15.179381927082432,
+          "median_seconds_to_restrict": 15.179381927082432
+        },
+        "stat_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 1.0,
+          "median_seconds_to_detect": 5.1793819270824315,
+          "median_seconds_to_restrict": 5.1793819270824315
+        },
+        "identity_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 1.0,
+          "median_seconds_to_detect": 5.1793819270824315,
+          "median_seconds_to_restrict": 5.1793819270824315
+        },
+        "generic": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 1.0,
+          "median_seconds_to_detect": 5.1793819270824315,
+          "median_seconds_to_restrict": 5.1793819270824315
+        },
+        "signature": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 1.0,
+          "median_seconds_to_detect": 5.1793819270824315,
+          "median_seconds_to_restrict": 5.1793819270824315
+        }
+      },
+      "exfiltration": {
+        "guardian": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.9946236559139785,
+          "median_seconds_to_detect": 6.997719577309908,
+          "median_seconds_to_restrict": 4.834987716021715
+        },
+        "ml_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.9663978494623656,
+          "median_seconds_to_detect": 15.46583057695534,
+          "median_seconds_to_restrict": 14.834987716021715
+        },
+        "stat_only": {
+          "episodes": 24,
+          "detected": 21,
+          "detection_rate": 0.875,
+          "window_recall": 0.8736559139784946,
+          "median_seconds_to_detect": 5.989060251013143,
+          "median_seconds_to_restrict": 5.989060251013143
+        },
+        "identity_only": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": 4.834987716021715
+        },
+        "generic": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.9663978494623656,
+          "median_seconds_to_detect": 15.46583057695534,
+          "median_seconds_to_restrict": 14.834987716021715
+        },
+        "signature": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": null
+        }
+      },
+      "cryptomining": {
+        "guardian": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.9314516129032259,
+          "median_seconds_to_detect": 14.761666250720737,
+          "median_seconds_to_restrict": 5.035163815555279
+        },
+        "ml_only": {
+          "episodes": 24,
+          "detected": 23,
+          "detection_rate": 0.9583333333333334,
+          "window_recall": 0.8575268817204301,
+          "median_seconds_to_detect": 15.090197536133928,
+          "median_seconds_to_restrict": 15.354984500751016
+        },
+        "stat_only": {
+          "episodes": 24,
+          "detected": 23,
+          "detection_rate": 0.9583333333333334,
+          "window_recall": 0.6693548387096775,
+          "median_seconds_to_detect": 15.619771465368103,
+          "median_seconds_to_restrict": 14.543202406464843
+        },
+        "identity_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.924731182795699,
+          "median_seconds_to_detect": 15.354984500751016,
+          "median_seconds_to_restrict": 5.035163815555279
+        },
+        "generic": {
+          "episodes": 24,
+          "detected": 23,
+          "detection_rate": 0.9583333333333334,
+          "window_recall": 0.8239247311827956,
+          "median_seconds_to_detect": 15.090197536133928,
+          "median_seconds_to_restrict": 15.090197536133928
+        },
+        "signature": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.4825268817204302,
+          "median_seconds_to_detect": 5.035163815555279,
+          "median_seconds_to_restrict": 5.035163815555279
+        }
+      },
+      "zero_day_hybrid": {
+        "guardian": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 1.0,
+          "median_seconds_to_detect": 7.716979306715075,
+          "median_seconds_to_restrict": 7.716979306715075
+        },
+        "ml_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.967741935483871,
+          "median_seconds_to_detect": 17.716979306715075,
+          "median_seconds_to_restrict": 17.716979306715075
+        },
+        "stat_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.9905913978494624,
+          "median_seconds_to_detect": 8.472574059895123,
+          "median_seconds_to_restrict": 8.472574059895123
+        },
+        "identity_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.9865591397849464,
+          "median_seconds_to_detect": 7.716979306715075,
+          "median_seconds_to_restrict": 7.716979306715075
+        },
+        "generic": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.9946236559139785,
+          "median_seconds_to_detect": 8.472574059895123,
+          "median_seconds_to_restrict": 8.472574059895123
+        },
+        "signature": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.9946236559139785,
+          "median_seconds_to_detect": 8.08645032014465,
+          "median_seconds_to_restrict": 8.08645032014465
+        }
+      },
+      "trusted_upload": {
+        "guardian": {
+          "episodes": 24,
+          "detected": 21,
+          "detection_rate": 0.875,
+          "window_recall": 0.8696236559139785,
+          "median_seconds_to_detect": 5.830856569868047,
+          "median_seconds_to_restrict": 5.8688305557880085
+        },
+        "ml_only": {
+          "episodes": 24,
+          "detected": 21,
+          "detection_rate": 0.875,
+          "window_recall": 0.8454301075268816,
+          "median_seconds_to_detect": 15.634654622466769,
+          "median_seconds_to_restrict": 15.634654622466769
+        },
+        "stat_only": {
+          "episodes": 24,
+          "detected": 19,
+          "detection_rate": 0.7916666666666666,
+          "window_recall": 0.788978494623656,
+          "median_seconds_to_detect": 5.685426996293245,
+          "median_seconds_to_restrict": 5.830856569868047
+        },
+        "identity_only": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": null
+        },
+        "generic": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": 15.781248857936589
+        },
+        "signature": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": null
+        }
+      },
+      "mimicry_exfil": {
+        "guardian": {
+          "episodes": 24,
+          "detected": 7,
+          "detection_rate": 0.2916666666666667,
+          "window_recall": 0.01747311827956989,
+          "median_seconds_to_detect": 140.48148785121157,
+          "median_seconds_to_restrict": 131.05578933369543
+        },
+        "ml_only": {
+          "episodes": 24,
+          "detected": 7,
+          "detection_rate": 0.2916666666666667,
+          "window_recall": 0.01747311827956989,
+          "median_seconds_to_detect": 140.48148785121157,
+          "median_seconds_to_restrict": 131.6300908161793
+        },
+        "stat_only": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": 140.48148785121157
+        },
+        "identity_only": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": null
+        },
+        "generic": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": 140.48148785121157
+        },
+        "signature": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": null
+        }
+      },
+      "low_rate_scan": {
+        "guardian": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.3817204301075268,
+          "median_seconds_to_detect": 5.559833349791006,
+          "median_seconds_to_restrict": 5.559833349791006
+        },
+        "ml_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.15994623655913978,
+          "median_seconds_to_detect": 57.41481976072828,
+          "median_seconds_to_restrict": 56.526659905866836
+        },
+        "stat_only": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.3615591397849462,
+          "median_seconds_to_detect": 5.559833349791006,
+          "median_seconds_to_restrict": 5.559833349791006
+        },
+        "identity_only": {
+          "episodes": 24,
+          "detected": 0,
+          "detection_rate": 0.0,
+          "window_recall": 0.0,
+          "median_seconds_to_detect": null,
+          "median_seconds_to_restrict": null
+        },
+        "generic": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.3669354838709677,
+          "median_seconds_to_detect": 5.559833349791006,
+          "median_seconds_to_restrict": 5.559833349791006
+        },
+        "signature": {
+          "episodes": 24,
+          "detected": 24,
+          "detection_rate": 1.0,
+          "window_recall": 0.375,
+          "median_seconds_to_detect": 5.2156552443193505,
+          "median_seconds_to_restrict": 5.2156552443193505
+        }
+      }
+    },
+    "per_device_fp": {
+      "temp-1": {
+        "false_alert_rate": 0.00043854403380775826,
+        "restrict_rate": 0.00047841167324482717
+      },
+      "motion-1": {
+        "false_alert_rate": 0.0,
+        "restrict_rate": 0.00011960291831120679
+      },
+      "env-1": {
+        "false_alert_rate": 0.00015947055774827572,
+        "restrict_rate": 0.00015947055774827572
+      },
+      "plug-1": {
+        "false_alert_rate": 7.973527887413786e-05,
+        "restrict_rate": 0.00011960291831120679
+      },
+      "relay-1": {
+        "false_alert_rate": 0.0,
+        "restrict_rate": 3.986763943706893e-05
+      },
+      "hub-1": {
+        "false_alert_rate": 0.0,
+        "restrict_rate": 0.0
+      },
+      "media-1": {
+        "false_alert_rate": 7.973527887413786e-05,
+        "restrict_rate": 7.973527887413786e-05
+      },
+      "cam-1": {
+        "false_alert_rate": 0.0,
+        "restrict_rate": 0.0
+      }
+    },
+    "latency_ms": {
+      "p50": 0.03170000854879618,
+      "p99": 2.272222999599763,
+      "max": 46.84880000422709
+    },
+    "fit_seconds_per_seed": 46.47593423333213
+  }
+}
