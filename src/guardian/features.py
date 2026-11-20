@@ -128,7 +128,7 @@ class Context:
     hour_activity: np.ndarray = field(default_factory=lambda: np.full(24, 0.5))
     # rolling state (not learned)
     streak: int = 0
-    last_active: float = -1e9
+    last_active: float | None = None
 
     def learn(self, windows: list[tuple[float, np.ndarray]]) -> None:
         """Learn destinations, ports and hourly activity from baseline windows."""
@@ -148,7 +148,7 @@ class Context:
 
     def reset_state(self) -> None:
         self.streak = 0
-        self.last_active = -1e9
+        self.last_active = None
 
 
 def _entropy(values: np.ndarray) -> float:
@@ -173,9 +173,10 @@ def extract(pkts: np.ndarray, t0: float, ctx: Context, dt: float = WINDOW) -> np
     usual = float(ctx.hour_activity[int(hour)])
     f[INDEX["hour_activity"]] = usual
 
+    since = dt if ctx.last_active is None else min(t0 - ctx.last_active, 3600.0)
     if n == 0:
         ctx.streak = 0
-        f[INDEX["since_prev_active"]] = min(t0 - ctx.last_active, 3600.0)
+        f[INDEX["since_prev_active"]] = since
         return f
 
     out = pkts["out"]
@@ -268,7 +269,7 @@ def extract(pkts: np.ndarray, t0: float, ctx: Context, dt: float = WINDOW) -> np
     f[57] = 1.0 - usual
     ctx.streak += 1
     f[58] = ctx.streak
-    f[59] = min(t0 - ctx.last_active, 3600.0)
+    f[59] = since
     ctx.last_active = t0
     return f
 
