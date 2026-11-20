@@ -19,15 +19,16 @@ import numpy as np
 
 from . import __version__
 from .detector import DeviceDetector
-from .features import NAMES
+from .features import FEATURE_VERSION, NAMES
 
 FORMAT = 1
 _SAFE = re.compile(r"^[A-Za-z0-9_.-]+$")
 
 
 def feature_signature() -> str:
-    """A short hash of the feature list; models are only valid for the same list."""
-    return hashlib.sha256(",".join(NAMES).encode()).hexdigest()[:16]
+    """A short hash of the feature list and version; models are only valid for the same."""
+    text = f"v{FEATURE_VERSION}:" + ",".join(NAMES)
+    return hashlib.sha256(text.encode()).hexdigest()[:16]
 
 
 def save_models(detectors: dict[str, DeviceDetector], directory: str | Path) -> Path:
