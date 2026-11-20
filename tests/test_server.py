@@ -98,3 +98,18 @@ def test_decision_log_downloads_as_csv(client):
     lines = r.text.strip().splitlines()
     assert lines[0].startswith("time,device,threat,tier")
     assert len(lines) > 1
+
+
+def test_stale_models_are_relearned_instead_of_crashing(tmp_path):
+    import json
+
+    first = LiveHome(seed=6, learn_hours=6, models=tmp_path)
+    first.learn()
+    manifest = json.loads((tmp_path / "manifest.json").read_text())
+    manifest["features"] = "from-an-older-version"
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+    second = LiveHome(seed=6, learn_hours=6, models=tmp_path)
+    second.learn()
+    assert second.ready and "learned" in second.progress
+    saved = json.loads((tmp_path / "manifest.json").read_text())
+    assert saved["features"] != "from-an-older-version"

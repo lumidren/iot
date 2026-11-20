@@ -65,7 +65,11 @@ class LiveHome:
     def learn(self) -> None:
         n = int(self.learn_hours * 3600 / W)
         if self.models is not None and (self.models / "manifest.json").exists():
-            loaded = self.guardian.load(self.models)
+            try:
+                loaded = self.guardian.load(self.models)
+            except ValueError as err:  # stale or foreign models: relearn and overwrite
+                self.progress = f"Saved models not usable ({err}); relearning"
+                loaded = []
             if len(loaded) == len(DEVICES):
                 # fast-forward the simulated home to where learning would have ended
                 for w in range(n):
