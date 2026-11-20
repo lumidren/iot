@@ -142,10 +142,13 @@ def explain(score: Score, detector: DeviceDetector | None = None,
             observed=f"{len(ident.new_lan)} local hosts it never contacted before"))
 
     dev = score.deviations
-    order = np.argsort(dev)[::-1]
-    for i in order[:3]:
-        if dev[i] < 1.0:
-            break
+    # Volume, destination and connection findings read better than packet-gap
+    # statistics, so timing features are only cited when nothing else stands out.
+    timing = np.array([f.group == "timing" for f in FEATURES])
+    rank = np.where(timing, dev * 0.25, dev)
+    for i in np.argsort(rank)[::-1][:3]:
+        if dev[i] < 1.0 or (timing[i] and len(reasons) >= 2):
+            continue
         feat = FEATURES[i]
         value = score.features[i]
         if detector is not None:
@@ -157,7 +160,7 @@ def explain(score: Score, detector: DeviceDetector | None = None,
             if feat.unit in ("ratio", "bits", "seconds"):
                 normal = f"between {_fmt(lo, feat.unit)} and {_fmt(hi, feat.unit)}"
             ratio = ""
-            if above and hi > 0 and feat.unit not in ("ratio",):
+            if above and hi > 0 and feat.unit not in ("ratio", "bits", "seconds"):
                 ratio = f" ({value / hi:.0f}x the usual maximum)" if value / hi >= 2 else ""
         else:
             normal, ratio, above = "", "", True
