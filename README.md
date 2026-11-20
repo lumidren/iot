@@ -37,6 +37,8 @@ never used, that is visible from metadata alone, encrypted or not.
 | **Graduated response** | Monitor → Restrict → Quarantine → Block, enforced as nftables rules on the gateway. Restrictions lift after quiet periods; a block waits for the owner. |
 | **Owner feedback** | "That was me" releases a device and teaches GUARDIAN the new destination, so legitimate changes stop alerting. |
 | **Hybrid startup** | Fixed safety rules from minute one, learned ranges after 24 h, full protection after 48 h. |
+| **Asks before relearning** | A daily drift review absorbs small changes (rotating cloud addresses) and asks the owner about big ones, such as a firmware update. Nothing is relearned without a yes, because a persistent attacker also looks like "drift". |
+| **Survives restarts** | Trained models are saved as plain arrays (no pickle) with a feature-version check, so a rebooted gateway is protected at once. |
 | **Local only** | Nothing leaves the gateway. Scoring a device-window takes 0.05 ms at the median and 3 ms at the 99th percentile on a laptop. |
 
 ## Example: what an alert says
@@ -191,7 +193,18 @@ the pattern twice.
 
 ## Quick start
 
-Python 3.11+.
+Python 3.11+, 64-bit.
+
+**Windows:**
+
+```powershell
+.\scripts\setup.ps1          # creates .venv and installs GUARDIAN
+.\scripts\serve.ps1 -Open    # dashboard on http://127.0.0.1:8000, models kept in .\models
+```
+
+(If scripts are blocked: `powershell -ExecutionPolicy Bypass -File scripts\serve.ps1`.)
+
+**Any platform:**
 
 ```bash
 python -m venv .venv && . .venv/bin/activate     # Windows: .venv\Scripts\activate
@@ -204,7 +217,9 @@ pytest -q
 ```
 
 In the dashboard, pick a device and an attack under **Red team** and press
-**Launch attack**. The home learns for 36 simulated hours first (about 20
+**Launch attack**. **Simulate firmware update** makes the selected device start
+using a new cloud service; within a simulated hour GUARDIAN asks on the device
+card whether that change was expected. **Download CSV** exports every decision. The home learns for 36 simulated hours first (about 20
 seconds), then runs at 20x real time.
 
 **Real captures.** The same pipeline runs on packet captures from a gateway:
@@ -246,12 +261,15 @@ src/guardian/
   response.py     graduated tiers, nftables rules, enforcement backends
   engine.py       gateway engine: learning phases, scoring, response, release
   capture.py      pcap reader/writer (no dependencies)
+  drift.py        daily drift review and owner questions
+  store.py        save/load trained models (no pickle)
   evaluate.py     reproducible evaluation against the baselines
   server.py       live simulated home + dashboard API
   web/            dashboard (vanilla JS, no build step, no CDN)
+scripts/          Windows setup/launch, feature-doc generator
 tests/            pytest suite
 eval/             committed evaluation results
-docs/             feature reference, testbed plan, screenshots
+docs/             architecture, feature reference, testbed plan, screenshots
 ```
 
 ## Limits
@@ -269,9 +287,11 @@ docs/             feature reference, testbed plan, screenshots
 ## Roadmap
 
 1. Physical testbed (8 devices + Raspberry Pi 4) and re-measured results.
-2. Profile drift handling for firmware updates (ask before relearning).
+2. Measure drift reviews on real firmware updates (the logic exists; real data does not).
 3. Physical-layer identity (clock skew) as a fourth signal.
 4. A user study of whether the explanations help owners act correctly.
+
+How the pieces fit and why each choice was made: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
