@@ -98,6 +98,25 @@ class Guardian:
             rt.first_seen = windows[0][0] if windows else 0.0
             rt.windows = []
 
+    def save(self, directory) -> None:
+        """Write every trained device model to ``directory``."""
+        from .store import save_models
+
+        save_models({d: rt.detector for d, rt in self.devices.items() if rt.detector},
+                    directory)
+
+    def load(self, directory) -> list[str]:
+        """Load saved models; returns the devices that are now protected."""
+        from .store import load_models
+
+        loaded = load_models(directory)
+        for dev_id, det in loaded.items():
+            if dev_id in self.devices:
+                rt = self.devices[dev_id]
+                rt.detector, rt.windows = det, []
+                rt.first_seen = rt.first_seen or 0.0
+        return [d for d in loaded if d in self.devices]
+
     def _advance_learning(self, rt: DeviceRuntime, t0: float) -> None:
         phase = rt.phase(t0, self.stats_after, self.learn_after)
         age = 0.0 if rt.first_seen is None else t0 - rt.first_seen
