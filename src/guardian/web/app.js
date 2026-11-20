@@ -197,6 +197,10 @@ function render() {
   $("#loading").hidden = true;
   $("#app").hidden = false;
   $("#clock").textContent = state.clock;
+  // keep the speed buttons in step with the server (another tab may have changed it)
+  document.querySelectorAll("[data-speed]").forEach((b) =>
+    b.classList.toggle("on", !state.paused && Math.abs(Number(b.dataset.speed) - state.speed) < 0.5));
+  $("#pause").classList.toggle("on", state.paused);
   setupSelects();
   renderSummary();
   renderDevices();
