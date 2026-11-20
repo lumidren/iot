@@ -35,8 +35,10 @@ def clock(t: float) -> str:
 
 
 class LiveHome:
-    def __init__(self, seed: int = 7, learn_hours: float = 36.0, tick: float = 0.5):
+    def __init__(self, seed: int = 7, learn_hours: float = 36.0, tick: float = 0.5,
+                 models: str | Path | None = None):
         self.seed = seed
+        self.models = Path(models) if models else None
         self.learn_hours = learn_hours
         self.tick = tick
         self.home = Home(seed=seed)
@@ -55,6 +57,16 @@ class LiveHome:
     # -- setup -------------------------------------------------------------
     def learn(self) -> None:
         n = int(self.learn_hours * 3600 / W)
+        if self.models is not None and (self.models / "manifest.json").exists():
+            loaded = self.guardian.load(self.models)
+            if len(loaded) == len(DEVICES):
+                # fast-forward the simulated home to where learning would have ended
+                for w in range(n):
+                    self.home.window(w * W, (w + 1) * W)
+                self.t = n * W
+                self.progress = f"Ready (models loaded from {self.models})"
+                self.ready = True
+                return
         history = {d.id: [] for d in DEVICES}
         t0 = time.perf_counter()
         for w in range(n):
@@ -65,6 +77,8 @@ class LiveHome:
                 history[dev].append((w * W, pkts))
         self.progress = "Learning each device's behavioral identity"
         self.guardian.bootstrap(history)
+        if self.models is not None:
+            self.guardian.save(self.models)
         self.t = n * W
         self.progress = f"Ready (learned in {time.perf_counter() - t0:.0f} s)"
         self.ready = True
