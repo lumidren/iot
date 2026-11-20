@@ -93,7 +93,8 @@ class LiveHome:
         self.version += 1
 
     def _recent_alert(self, device: str, t0: float) -> bool:
-        return any(a["device"] == device and t0 - a["t"] < 60 for a in self.alerts)
+        """An alert for this device in the last 5 simulated minutes (avoid repeats)."""
+        return any(a["device"] == device and t0 - a["t"] < 300 for a in self.alerts)
 
     def launch(self, device: str, kind: str, duration: float = 180.0) -> Attack:
         spec = DEVICE_INDEX[device]
