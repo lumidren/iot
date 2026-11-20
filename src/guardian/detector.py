@@ -260,7 +260,8 @@ class DeviceDetector:
         x = extract(pkts, t0, self.ctx)
         dev = self.baseline.deviations(x)
         s_stat = corroborate(self._stat_hist, stat_score(dev), strong=75.0)
-        s_ml = corroborate(self._ml_hist, self.ml_score(x), strong=90.0)
+        # The ML layer is the hardest to explain, so it never acts on one window alone.
+        s_ml = corroborate(self._ml_hist, self.ml_score(x), strong=math.inf)
         ident = identity(pkts, self.ctx)
         s_id = ident.score
         return Score(t0, combine(s_ml, s_stat, s_id), s_ml, s_stat, s_id, x, dev, ident)
