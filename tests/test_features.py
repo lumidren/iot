@@ -97,3 +97,12 @@ def test_model_view_logs_heavy_columns_only():
     v = model_view(x)
     assert np.isclose(v[INDEX["pkts_out"]], 1.0)
     assert v[INDEX["upload_frac"]] == 0.5
+
+
+def test_streak_is_capped_so_restarts_do_not_look_unusual():
+    from guardian.features import STREAK_CAP
+
+    ctx = Context()
+    for w in range(STREAK_CAP + 50):
+        x = extract(mqtt_window(w * 10.0), w * 10.0, ctx)
+    assert x[INDEX["active_streak"]] == STREAK_CAP

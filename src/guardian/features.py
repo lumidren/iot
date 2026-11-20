@@ -99,7 +99,8 @@ FEATURES: list[Feature] = [
     Feature("hour_cos", "Time of day (cos)", "", "time", explain=False),
     Feature("hour_activity", "Usual activity at this hour", "ratio", "time", explain=False),
     Feature("off_hours_activity", "Activity at an unusual hour", "ratio", "time"),
-    Feature("active_streak", "Consecutive active windows", "windows", "time", log=True),
+    Feature("active_streak", "Consecutive active windows (capped at 1 h)", "windows", "time",
+            log=True),
     Feature("since_prev_active", "Seconds since previous activity", "seconds", "time",
             explain=False),
 ]
@@ -111,6 +112,10 @@ LOG_MASK = np.array([f.log for f in FEATURES])
 EXPLAIN_MASK = np.array([f.explain for f in FEATURES])
 
 assert N_FEATURES == 60, N_FEATURES
+
+# Bump when a feature's definition changes: saved models from older versions are stale.
+FEATURE_VERSION = 2
+STREAK_CAP = 360  # windows (one hour)
 
 MQTT_PORTS = (1883, 8883)
 HTTP_PORTS = (80, 8080)
@@ -268,7 +273,8 @@ def extract(pkts: np.ndarray, t0: float, ctx: Context, dt: float = WINDOW) -> np
     # time of day
     f[57] = 1.0 - usual
     ctx.streak += 1
-    f[58] = ctx.streak
+    # Capped so the value describes behavior, not how long ago monitoring started.
+    f[58] = min(ctx.streak, STREAK_CAP)
     f[59] = since
     ctx.last_active = t0
     return f
