@@ -188,7 +188,7 @@ def summarize(results: list[SeedResult]) -> dict:
             "normal_windows": int(len(normal)),
         }
         for kind in ALL_ATTACKS:
-            detected, recall, ttd = [], [], []
+            detected, recall, ttd, ttr = [], [], [], []
             for res in results:
                 for ep, attack in res.episodes.items():
                     if attack.kind != kind:
@@ -199,12 +199,16 @@ def summarize(results: list[SeedResult]) -> dict:
                     recall.append(len(hits) / max(len(rows), 1))
                     if hits:
                         ttd.append(max(0.0, hits[0].t0 + W - attack.start))
+                    restricted = [r for r in rows if r.scores[det] >= RESTRICT]
+                    if restricted:
+                        ttr.append(max(0.0, restricted[0].t0 + W - attack.start))
             summary["per_attack"].setdefault(kind, {})[det] = {
                 "episodes": len(detected),
                 "detected": int(sum(detected)),
                 "detection_rate": float(np.mean(detected)),
                 "window_recall": float(np.mean(recall)),
                 "median_seconds_to_detect": float(np.median(ttd)) if ttd else None,
+                "median_seconds_to_restrict": float(np.median(ttr)) if ttr else None,
             }
     for det in DETECTORS:
         agg = summary["detectors"][det]
@@ -274,14 +278,16 @@ def to_markdown(summary: dict, config: dict) -> str:
         "",
         "## GUARDIAN: speed and depth per scenario",
         "",
-        "| Scenario | Detected | Windows flagged during attack | Median time to first alert |",
-        "|---|---:|---:|---:|",
+        "| Scenario | Detected | Windows flagged during attack "
+        "| Median time to first restriction (31+) | Median time to first alert (61+) |",
+        "|---|---:|---:|---:|---:|",
     ]
     for kind in ALL_ATTACKS:
         g = summary["per_attack"][kind]["guardian"]
-        ttd = g["median_seconds_to_detect"]
+        ttd, ttr = g["median_seconds_to_detect"], g["median_seconds_to_restrict"]
+        secs = lambda v: "-" if v is None else f"{v:.0f} s"  # noqa: E731
         lines.append(f"| {LABELS[kind]} | {g['detected']}/{g['episodes']} "
-                     f"| {pct(g['window_recall'])} | {'-' if ttd is None else f'{ttd:.0f} s'} |")
+                     f"| {pct(g['window_recall'])} | {secs(ttr)} | {secs(ttd)} |")
     lines += [
         "",
         "## GUARDIAN false alarms per device",
