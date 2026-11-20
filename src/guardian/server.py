@@ -10,6 +10,8 @@ contained; release a device to undo a decision.
 from __future__ import annotations
 
 import asyncio
+import csv
+import io
 import json
 import time
 from collections import deque
@@ -144,6 +146,24 @@ class LiveHome:
         if event is not None and event.action is not None:
             self.actions.appendleft(event.action.to_dict())
 
+    def log_csv(self) -> str:
+        """Every decision this session, oldest first, as CSV for a report or a ticket."""
+        out = io.StringIO()
+        writer = csv.writer(out)
+        writer.writerow(["time", "device", "threat", "tier", "likely_attack", "ml", "ranges",
+                         "identity", "reasons", "action"])
+        for e in self.guardian.log:
+            exp = e.explanation
+            writer.writerow([
+                clock(e.t), e.device, f"{e.threat:.1f}",
+                e.action.after.name if e.action else e.tier.name,
+                exp.likely_attack if exp else "", f"{e.ml:.1f}", f"{e.stat:.1f}",
+                f"{e.ident:.1f}",
+                "; ".join(r.title for r in exp.reasons) if exp else "",
+                e.action.reason if e.action else "",
+            ])
+        return out.getvalue()
+
     def snapshot(self) -> dict:
         status = self.guardian.status(self.t) if self.ready else []
         for row in status:
@@ -194,7 +214,7 @@ class SpeedIn(BaseModel):
 
 def create_app(live: LiveHome | None = None, run: bool = True):
     from fastapi import FastAPI, HTTPException
-    from fastapi.responses import FileResponse, StreamingResponse
+    from fastapi.responses import FileResponse, Response, StreamingResponse
     from fastapi.staticfiles import StaticFiles
 
     live = live or LiveHome()
@@ -248,6 +268,11 @@ def create_app(live: LiveHome | None = None, run: bool = True):
             raise HTTPException(400, "unknown device")
         live.release(body.device, body.trust)
         return {"ok": True}
+
+    @app.get("/api/log.csv")
+    def log_csv():
+        return Response(live.log_csv(), media_type="text/csv", headers={
+            "Content-Disposition": 'attachment; filename="guardian-decisions.csv"'})
 
     @app.post("/api/update")
     def update(body: DeviceIn):
