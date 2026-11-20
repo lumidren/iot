@@ -61,3 +61,15 @@ def test_bad_requests_are_rejected(client):
     assert c.post("/api/attack", json={"device": "toaster", "kind": "scan"}).status_code == 400
     assert c.post("/api/attack", json={"device": "hub-1", "kind": "nope"}).status_code == 400
     assert c.post("/api/speed", json={"speed": 100}).json()["speed"] == pytest.approx(100)
+
+
+def test_second_start_loads_the_saved_models(tmp_path):
+    first = LiveHome(seed=6, learn_hours=6, models=tmp_path)
+    first.learn()
+    assert (tmp_path / "manifest.json").exists()
+    second = LiveHome(seed=6, learn_hours=6, models=tmp_path)
+    second.learn()
+    assert second.ready and "loaded" in second.progress
+    assert second.t == first.t
+    second.step()
+    assert all(d["phase"] == "protected" for d in second.snapshot()["devices"])
