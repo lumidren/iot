@@ -22,7 +22,8 @@ def _serve(args: argparse.Namespace) -> None:
 
     from .server import LiveHome, create_app
 
-    live = LiveHome(seed=args.seed, learn_hours=args.learn_hours, tick=10.0 / args.speed)
+    live = LiveHome(seed=args.seed, learn_hours=args.learn_hours, tick=10.0 / args.speed,
+                    models=args.models)
     print(f"GUARDIAN dashboard on http://{args.host}:{args.port} "
           f"(learning {args.learn_hours:.0f} simulated hours first)")
     uvicorn.run(create_app(live), host=args.host, port=args.port, log_level="warning")
@@ -113,6 +114,9 @@ def _pcap(args: argparse.Namespace) -> None:
     print(f"Learned {len(next(iter(history.values())))} windows per device from {args.learn}")
     g = Guardian(specs)
     g.bootstrap(history)
+    if args.save_models:
+        g.save(args.save_models)
+        print(f"Saved models to {args.save_models}")
     alerts = 0
     for t0, win in read_windows(args.check, devices):
         for e in g.observe(t0, win):
@@ -138,6 +142,8 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--learn-hours", type=float, default=36.0)
     p.add_argument("--speed", type=float, default=20.0, help="simulated seconds per real second")
+    p.add_argument("--models", default=None,
+                   help="folder for trained models: loaded if present, saved after learning")
     p.set_defaults(func=_serve)
 
     p = sub.add_parser("demo", help="one attack against one device, in the terminal")
@@ -162,6 +168,7 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--check", required=True, help="capture to inspect")
     p.add_argument("--device", action="append", required=True, metavar="NAME=IP",
                    help="a device to protect, e.g. cam=192.168.50.108 (repeatable)")
+    p.add_argument("--save-models", default=None, help="folder to save the learned models in")
     p.set_defaults(func=_pcap)
 
     args = parser.parse_args(argv)
