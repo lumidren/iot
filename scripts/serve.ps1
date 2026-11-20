@@ -26,18 +26,30 @@ Set-Location $root
 
 function Test-Python([string]$exe) {
     if (-not $exe -or -not (Test-Path $exe)) { return $false }
-    & $exe -c "import sys; sys.exit(0 if sys.maxsize > 2**32 and sys.version_info >= (3, 11) else 1)" 2>$null
-    return $LASTEXITCODE -eq 0
+    # A broken venv launcher writes to stderr; Windows PowerShell 5.1 would turn
+    # that into a terminating error under 'Stop', so probe with errors allowed.
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        & $exe -c "import sys; sys.exit(0 if sys.maxsize > 2**32 and sys.version_info >= (3, 11) else 1)" 2>$null | Out-Null
+        return $LASTEXITCODE -eq 0
+    } catch {
+        return $false
+    } finally {
+        $ErrorActionPreference = $previous
+    }
 }
 
 $python = Join-Path $root '.venv\Scripts\python.exe'
 if (-not (Test-Python $python)) {
     $candidates = @()
     if (Get-Command py -ErrorAction SilentlyContinue) {
+        $ErrorActionPreference = 'Continue'
         foreach ($v in '3.13', '3.12', '3.11') {
             $found = & py "-$v" -c "import sys; print(sys.executable)" 2>$null
-            if ($LASTEXITCODE -eq 0 -and $found) { $candidates += $found.Trim() }
+            if ($LASTEXITCODE -eq 0 -and $found) { $candidates += "$found".Trim() }
         }
+        $ErrorActionPreference = 'Stop'
     }
     $candidates += Get-ChildItem "$env:LOCALAPPDATA\Programs\Python\Python31*\python.exe" -ErrorAction SilentlyContinue |
         ForEach-Object { $_.FullName }
