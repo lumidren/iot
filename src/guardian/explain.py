@@ -100,10 +100,10 @@ def classify(score: Score) -> str:
         return "Flooding (device used in a DDoS)"
     if len(ident.new_lan) >= 8 or (f["n_conn_targets"] >= 10 and f["failed_conn_ratio"] > 0.5):
         return "Network scanning (worm-style propagation)"
-    if ident.unsolicited_inbound and (ident.new_external_nets or f["n_dns_queries"] >= 3):
-        return "Exploitation followed by command-and-control"
     if ports & MINING_PORTS:
         return "Cryptomining pool connection"
+    if ident.unsolicited_inbound and (ident.new_external_nets or f["n_dns_queries"] >= 3):
+        return "Exploitation followed by command-and-control"
     if f["bytes_out"] >= 100_000 and f["upload_frac"] > 0.8 and ident.new_external:
         return "Data exfiltration"
     if ident.new_external_nets:
