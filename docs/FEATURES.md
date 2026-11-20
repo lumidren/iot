@@ -2,7 +2,8 @@
 
 Computed for every device every 10 seconds from packet metadata only (time, direction,
 size, protocol, remote address and port, TCP flags), so they work on encrypted traffic.
-Generated from `src/guardian/features.py`.
+Generated from `src/guardian/features.py` (feature version 2) by
+`scripts/gen_features_doc.py`.
 
 *Log* marks heavy-tailed features that the models see as log(1 + x). *Cited* marks
 features an explanation may quote; the rest only give the models context.
@@ -99,5 +100,5 @@ features an explanation may quote; the rest only give the models context.
 | 55 | `hour_cos` | Time of day (cos) | - |  |  |
 | 56 | `hour_activity` | Usual activity at this hour | ratio |  |  |
 | 57 | `off_hours_activity` | Activity at an unusual hour | ratio |  | yes |
-| 58 | `active_streak` | Consecutive active windows | windows | yes | yes |
+| 58 | `active_streak` | Consecutive active windows (capped at 1 h) | windows | yes | yes |
 | 59 | `since_prev_active` | Seconds since previous activity | seconds |  |  |
