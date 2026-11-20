@@ -8,8 +8,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install
@@ -18,7 +18,7 @@ jobs:
         run: ruff check src tests
       - name: Tests
         run: pytest -q
-      - name: Evaluation smoke run (1 seed, 2 test hours)
-        run: python -m guardian eval --seeds 1 --hours 2 --out runs/ci
+      - name: Evaluation smoke run (1 seed, 6 test hours)
+        run: python -m guardian eval --seeds 1 --hours 6 --out runs/ci
       - name: Terminal demo
         run: python -m guardian demo --device plug-1 --attack cc_beacon --learn-hours 12
