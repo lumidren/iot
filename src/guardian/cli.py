@@ -66,6 +66,62 @@ def _demo(args: argparse.Namespace) -> None:
     print(f"\nFinal tier: {g.policy.state(spec.id).tier.name}")
 
 
+def _export(args: argparse.Namespace) -> None:
+    import numpy as np
+
+    from .attacks import INTENSITY_BY_KIND, Attack
+    from .capture import write_pcap
+    from .devices import DEVICE_INDEX, Home
+    from .net import concat
+
+    home = Home(seed=args.seed)
+    start = args.start_hour * 3600
+    n = int(args.hours * 360)
+    attack = None
+    if args.attack:
+        spec = DEVICE_INDEX[args.device]
+        attack = Attack(args.attack, spec.id, start + args.attack_at * 60, 300,
+                        INTENSITY_BY_KIND[spec.kind])
+    rng = np.random.default_rng(args.seed)
+    triples = []
+    for w in range(n):
+        t = start + w * 10.0
+        for dev, pkts in home.window(t, t + 10).items():
+            if attack is not None and dev == attack.device:
+                pkts = concat([pkts] + attack.emit(t, t + 10, rng))
+            triples.append((dev, DEVICE_INDEX[dev].address, pkts))
+    count = write_pcap(args.out, triples, epoch=1_700_006_400.0)  # a UTC midnight
+    print(f"Wrote {count:,} packets to {args.out}")
+
+
+def _pcap(args: argparse.Namespace) -> None:
+    from .capture import read_windows
+    from .devices import DeviceSpec
+    from .engine import Guardian
+    from .net import ip
+
+    devices = {}
+    for item in args.device:
+        name, _, addr = item.partition("=")
+        devices[name] = ip(addr)
+    specs = [DeviceSpec(name, name, "device", "unknown", addr, list) for name, addr in
+             devices.items()]
+    history = {name: [] for name in devices}
+    for t0, win in read_windows(args.learn, devices):
+        for name, pkts in win.items():
+            history[name].append((t0, pkts))
+    print(f"Learned {len(next(iter(history.values())))} windows per device from {args.learn}")
+    g = Guardian(specs)
+    g.bootstrap(history)
+    alerts = 0
+    for t0, win in read_windows(args.check, devices):
+        for e in g.observe(t0, win):
+            if e.explanation is not None and (e.action is not None or e.threat >= 61):
+                alerts += 1
+                print(f"\n{e.explanation.render()}")
+    print(f"\n{alerts} alert(s) in {args.check}")
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="guardian", description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -90,6 +146,23 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--seed", type=int, default=3)
     p.add_argument("--learn-hours", type=float, default=36.0)
     p.set_defaults(func=_demo)
+
+    p = sub.add_parser("export", help="write simulated traffic to a pcap (opens in Wireshark)")
+    p.add_argument("out")
+    p.add_argument("--hours", type=float, default=1.0)
+    p.add_argument("--start-hour", type=float, default=0.0)
+    p.add_argument("--seed", type=int, default=1)
+    p.add_argument("--attack", default=None)
+    p.add_argument("--device", default="cam-1")
+    p.add_argument("--attack-at", type=float, default=30.0, help="minutes into the capture")
+    p.set_defaults(func=_export)
+
+    p = sub.add_parser("pcap", help="learn from one capture, check another")
+    p.add_argument("--learn", required=True, help="capture of normal traffic (24-48 h)")
+    p.add_argument("--check", required=True, help="capture to inspect")
+    p.add_argument("--device", action="append", required=True, metavar="NAME=IP",
+                   help="a device to protect, e.g. cam=192.168.50.108 (repeatable)")
+    p.set_defaults(func=_pcap)
 
     args = parser.parse_args(argv)
     args.func(args)
