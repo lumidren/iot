@@ -241,7 +241,17 @@ $("#pause").addEventListener("click", async () => {
   $("#pause").classList.toggle("on", paused);
 });
 
+async function poll() {
+  try {
+    state = await (await fetch("/api/state")).json();
+    render();
+  } catch (e) { /* server restarting */ }
+  setTimeout(poll, 1000);
+}
+
 function connect() {
+  // ?poll=1 uses plain requests instead of a stream (proxies, headless capture)
+  if (new URLSearchParams(location.search).has("poll") || !window.EventSource) return poll();
   const es = new EventSource("/api/stream");
   es.onmessage = (m) => { state = JSON.parse(m.data); render(); };
   es.onerror = () => { es.close(); setTimeout(connect, 1500); };
