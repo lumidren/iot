@@ -12,11 +12,13 @@
 .EXAMPLE
   .\scripts\serve.ps1
   .\scripts\serve.ps1 -Port 8050 -LearnHours 48 -Open
+  .\scripts\serve.ps1 -Models ''    # always relearn, save nothing
 #>
 param(
     [int]$Port = 8000,
     [double]$LearnHours = 36,
     [double]$Speed = 20,
+    [string]$Models = 'models',
     [switch]$Open
 )
 
@@ -73,4 +75,7 @@ if ($Open) {
     } -ArgumentList "http://127.0.0.1:$Port" | Out-Null
 }
 
-& $python -m guardian serve --port $Port --learn-hours $LearnHours --speed $Speed
+$arguments = @('-m', 'guardian', 'serve', '--port', $Port, '--learn-hours', $LearnHours,
+               '--speed', $Speed)
+if ($Models) { $arguments += @('--models', $Models) }
+& $python @arguments
