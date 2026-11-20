@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GUARDIAN · Home IoT Defense</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" class="logo" aria-hidden="true"><path d="M16 2 4 7v8c0 7.5 5.1 13.6 12 15 6.9-1.4 12-7.5 12-15V7L16 2z" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="16" cy="15" r="4.5" fill="currentColor"/></svg>
+    <div>
+      <h1>GUARDIAN</h1>
+      <p>Behavioral identity for every device in the home</p>
+    </div>
+  </div>
+  <div class="status" id="status"><span class="dot"></span><span id="status-text">Starting…</span></div>
+  <div class="clock">
+    <span id="clock">—</span>
+    <div class="speed" role="group" aria-label="Simulation speed">
+      <button data-speed="10" title="Real time">1×</button>
+      <button data-speed="20" class="on" title="20× real time">20×</button>
+      <button data-speed="100" title="100× real time">100×</button>
+      <button id="pause" title="Pause">❚❚</button>
+    </div>
+  </div>
+</header>
+
+<div id="loading" class="loading">
+  <div class="spinner"></div>
+  <p id="progress">Starting…</p>
+  <small>Simulating normal traffic and learning each device's behavioral identity.</small>
+</div>
+
+<main id="app" hidden>
+  <section class="launcher card">
+    <h2>Red team</h2>
+    <p class="muted">Pick a device and an attack. Nothing in it is known to GUARDIAN in advance.</p>
+    <div class="row">
+      <label>Device <select id="atk-device"></select></label>
+      <label>Attack <select id="atk-kind"></select></label>
+      <button id="launch" class="danger">Launch attack</button>
+    </div>
+    <div id="active-attacks" class="chips"></div>
+  </section>
+
+  <section class="summary">
+    <div class="kpi"><span id="k-protected">0</span><small>devices protected</small></div>
+    <div class="kpi"><span id="k-contained">0</span><small>contained now</small></div>
+    <div class="kpi"><span id="k-alerts">0</span><small>alerts this session</small></div>
+    <div class="kpi"><span id="k-local">100%</span><small>processed on the gateway</small></div>
+  </section>
+
+  <section class="devices" id="devices"></section>
+
+  <section class="detail card" id="detail">
+    <div class="detail-head">
+      <h2>Latest decision</h2>
+      <span class="muted" id="detail-time"></span>
+    </div>
+    <div id="detail-body" class="empty">No alerts yet. Every device is acting like itself.</div>
+  </section>
+
+  <section class="feed card">
+    <h2>Decision log</h2>
+    <ol id="feed"></ol>
+  </section>
+
+  <section class="rules card">
+    <h2>Gateway firewall <span class="muted">(nftables, dry run)</span></h2>
+    <pre id="rules">No rules applied yet.</pre>
+  </section>
+</main>
+
+<footer>GUARDIAN · simulated home · all processing local · Designed &amp; Crafted by lumidren</footer>
+<script src="/static/app.js"></script>
+</body>
+</html>
