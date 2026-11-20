@@ -24,8 +24,8 @@ Seeds: [1, 2, 3]. Per seed: 2.0 days of learning (0.5 held out for calibration),
 
 | Detector | Windows alerting (61+) | Windows restricted (31+) | False alerts per device per day |
 |---|---:|---:|---:|
-| GUARDIAN | 0.009% | 0.012% | 0.65 |
-| ML only | 0.005% | 0.011% | 0.30 |
+| GUARDIAN | 0.009% | 0.015% | 0.65 |
+| ML only | 0.005% | 0.014% | 0.30 |
 | Ranges only | 0.001% | 0.008% | 0.09 |
 | Identity only | 0.000% | 0.000% | 0.00 |
 | Generic model | 0.000% | 0.001% | 0.00 |
@@ -54,11 +54,11 @@ Seeds: [1, 2, 3]. Per seed: 2.0 days of learning (0.5 held out for calibration),
 | env-1 | 0.016% | 0.016% |
 | plug-1 | 0.008% | 0.012% |
 | relay-1 | 0.000% | 0.004% |
-| hub-1 | 0.000% | 0.000% |
+| hub-1 | 0.000% | 0.024% |
 | media-1 | 0.008% | 0.008% |
 | cam-1 | 0.000% | 0.000% |
 
 ## Cost
 
-- Scoring one device-window (features + all three layers; silent windows are cheap): p50 0.03 ms, p99 2.27 ms, max 46.8 ms on this machine.
-- Training all eight device models plus the generic model: 46 s per seed.
+- Scoring one device-window (features + all three layers; silent windows are cheap): p50 0.03 ms, p99 1.53 ms, max 39.9 ms on this machine.
+- Training all eight device models plus the generic model: 35 s per seed.

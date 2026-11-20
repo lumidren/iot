@@ -15,7 +15,7 @@
     "detectors": {
       "guardian": {
         "false_alert_rate": 9.468564366303871e-05,
-        "restrict_rate": 0.0001245863732408404,
+        "restrict_rate": 0.0001544871028186421,
         "false_alerts_per_device_day": 0.6458557588805167,
         "normal_windows": 200664,
         "detection_rate_headline": 0.9791666666666666,
@@ -23,7 +23,7 @@
       },
       "ml_only": {
         "false_alert_rate": 4.983454929633616e-05,
-        "restrict_rate": 0.00011461946338157318,
+        "restrict_rate": 0.00013953673802974127,
         "false_alerts_per_device_day": 0.3013993541442411,
         "normal_windows": 200664,
         "detection_rate_headline": 0.9583333333333334,
@@ -250,8 +250,8 @@
           "episodes": 24,
           "detected": 24,
           "detection_rate": 1.0,
-          "window_recall": 0.9663978494623656,
-          "median_seconds_to_detect": 15.46583057695534,
+          "window_recall": 0.963709677419355,
+          "median_seconds_to_detect": 16.39868547732476,
           "median_seconds_to_restrict": 14.834987716021715
         },
         "signature": {
@@ -276,7 +276,7 @@
           "episodes": 24,
           "detected": 23,
           "detection_rate": 0.9583333333333334,
-          "window_recall": 0.8575268817204301,
+          "window_recall": 0.8561827956989249,
           "median_seconds_to_detect": 15.090197536133928,
           "median_seconds_to_restrict": 15.354984500751016
         },
@@ -300,7 +300,7 @@
           "episodes": 24,
           "detected": 23,
           "detection_rate": 0.9583333333333334,
-          "window_recall": 0.8239247311827956,
+          "window_recall": 0.814516129032258,
           "median_seconds_to_detect": 15.090197536133928,
           "median_seconds_to_restrict": 15.090197536133928
         },
@@ -350,7 +350,7 @@
           "episodes": 24,
           "detected": 24,
           "detection_rate": 1.0,
-          "window_recall": 0.9946236559139785,
+          "window_recall": 0.993279569892473,
           "median_seconds_to_detect": 8.472574059895123,
           "median_seconds_to_restrict": 8.472574059895123
         },
@@ -537,7 +537,7 @@
       },
       "hub-1": {
         "false_alert_rate": 0.0,
-        "restrict_rate": 0.0
+        "restrict_rate": 0.00023920583662241358
       },
       "media-1": {
         "false_alert_rate": 7.973527887413786e-05,
@@ -549,10 +549,10 @@
       }
     },
     "latency_ms": {
-      "p50": 0.03170000854879618,
-      "p99": 2.272222999599763,
-      "max": 46.84880000422709
+      "p50": 0.028099995688535273,
+      "p99": 1.5268999995896593,
+      "max": 39.87020000931807
     },
-    "fit_seconds_per_seed": 46.47593423333213
+    "fit_seconds_per_seed": 34.74840873332869
   }
 }
